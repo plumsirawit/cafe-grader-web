@@ -90,3 +90,6 @@ gem 'minitest-reporters'
 
 #---------------- for console --------------------
 gem 'fuzzy-string-match'
+
+#with-ssl-cert (Sirawit, 8/4/2019)
+gem 'thin'
