@@ -92,4 +92,6 @@ gem 'minitest-reporters'
 gem 'fuzzy-string-match'
 
 #with-ssl-cert (Sirawit, 8/4/2019)
-gem 'thin'
+#development: Judge fix (Sirawit, 26/12/2021)
+gem 'daemons', '~> 1.3.1'
+# gem 'thin', '~> 1.7.2'
