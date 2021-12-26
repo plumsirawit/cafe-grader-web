@@ -41,7 +41,7 @@
               :javascript
                 $("#countdown").countdown({until: "+#{@current_user.contest_time_left.to_i}s", layout: 'Time left: {hnn}:{mnn}:{snn}'}); 
           / admin section
-          - if (@current_user!=nil) and (session[:admin])
+          - if (@current_user!=nil)
             / management
             %li.dropdown
               %a.dropdown-toggle{href: '#', data: {toggle:'dropdown'},  aria: {haspopup:"true", expanded:"false"}, role: "button"}
@@ -50,16 +50,17 @@
               %ul.dropdown-menu
                 = add_menu( 'Announcements', 'announcements', 'index')
                 = add_menu( 'Problems', 'problems', 'index')
-                = add_menu( 'Tags', 'tags', 'index')
-                = add_menu( 'Users', 'user_admin', 'index')
-                = add_menu( 'User Groups', 'groups', 'index')
-                = add_menu( 'Graders', 'graders', 'list')
-                = add_menu( 'Message ', 'messages', 'console')
-                %li.divider{role: 'separator'}
-                = add_menu( 'System config', 'configurations', 'index')
-                %li.divider{role: 'separator'}
-                = add_menu( 'Sites', 'sites', 'index')
-                = add_menu( 'Contests', 'contest_management', 'index')
+                - if (session[:admin])
+                  = add_menu( 'Tags', 'tags', 'index')
+                  = add_menu( 'Users', 'user_admin', 'index')
+                  / = add_menu( 'User Groups', 'groups', 'index')
+                  / = add_menu( 'Graders', 'graders', 'list')
+                  / = add_menu( 'Message ', 'messages', 'console')
+                  %li.divider{role: 'separator'}
+                  = add_menu( 'System config', 'configurations', 'index')
+                  %li.divider{role: 'separator'}
+                  = add_menu( 'Sites', 'sites', 'index')
+                  = add_menu( 'Contests', 'contest_management', 'index')
             / report
             %li.dropdown
               %a.dropdown-toggle{href: '#', data: {toggle:'dropdown'},  aria: {haspopup:"true", expanded:"false"}, role: "button"}
