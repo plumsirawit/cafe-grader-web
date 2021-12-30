@@ -135,4 +135,11 @@ class ApplicationController < ActionController::Base
     return true
   end
 
+  def authorization_by_problem
+    return false unless authenticate
+    user = User.find(session[:user_id])
+    problem = Problem.find(params[:id])
+    return true if problem==nil or user.admin?
+    return problem.user==user
+  end
 end

@@ -18,6 +18,13 @@ class Problem < ActiveRecord::Base
   validates_presence_of :full_name
 
   scope :available, -> { where(available: true) }
+  def self.with_user_access(current_user)
+    if current_user.admin?
+      Problem.all
+    else
+      Problem.where(user: current_user)
+    end
+  end
 
   DEFAULT_TIME_LIMIT = 1
   DEFAULT_MEMORY_LIMIT = 32

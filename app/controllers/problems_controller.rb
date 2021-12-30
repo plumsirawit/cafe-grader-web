@@ -1,6 +1,8 @@
 class ProblemsController < ApplicationController
 
   before_action :authenticate
+  before_action :authorization_by_problem, only: [:destroy, :show, :edit, :update, :toggle, :toggle_test, :toggle_view_testcase, :stat]
+  before_action :authorization, only: [:manage, :do_manage, :remove_contest]
   # before_action :authenticate, :authorization
   # before_action :testcase_authorization, only: [:show_testcase]
 
@@ -9,7 +11,7 @@ class ProblemsController < ApplicationController
   in_place_edit_for :problem, :full_score
 
   def index
-    @problems = Problem.order(date_added: :desc)
+    @problems = Problem.with_user_access(@current_user).order(date_added: :desc)
   end
 
   # GETs should be safe (see http://www.w3.org/2001/tag/doc/whenToUseGet.html)
@@ -23,46 +25,46 @@ class ProblemsController < ApplicationController
     @problem = Problem.find(params[:id])
   end
 
-  def new
-    @problem = Problem.new
-    @description = nil
-  end
+  # def new
+  #   @problem = Problem.new
+  #   @description = nil
+  # end
 
-  def create
-    @problem = Problem.new(problem_params)
-    @description = Description.new(params[:description])
-    if @description.body!=''
-      if !@description.save
-        render :action => new and return
-      end
-    else
-      @description = nil
-    end
-    @problem.description = @description
-    if @problem.save
-      flash[:notice] = 'Problem was successfully created.'
-      redirect_to action: :index
-    else
-      render :action => 'new'
-    end
-  end
+  # def create
+  #   @problem = Problem.new(problem_params)
+  #   @description = Description.new(params[:description])
+  #   if @description.body!=''
+  #     if !@description.save
+  #       render :action => new and return
+  #     end
+  #   else
+  #     @description = nil
+  #   end
+  #   @problem.description = @description
+  #   if @problem.save
+  #     flash[:notice] = 'Problem was successfully created.'
+  #     redirect_to action: :index
+  #   else
+  #     render :action => 'new'
+  #   end
+  # end
 
-  def quick_create
-    @problem = Problem.new(problem_params)
-    @problem.full_name = @problem.name if @problem.full_name == ''
-    @problem.full_score = 100
-    @problem.available = false
-    @problem.test_allowed = true
-    @problem.output_only = false
-    @problem.date_added = Time.new
-    if @problem.save
-      flash[:notice] = 'Problem was successfully created.'
-      redirect_to action: :index
-    else
-      flash[:notice] = 'Error saving problem'
-    redirect_to action: :index
-    end
-  end
+  # def quick_create
+  #   @problem = Problem.new(problem_params)
+  #   @problem.full_name = @problem.name if @problem.full_name == ''
+  #   @problem.full_score = 100
+  #   @problem.available = false
+  #   @problem.test_allowed = true
+  #   @problem.output_only = false
+  #   @problem.date_added = Time.new
+  #   if @problem.save
+  #     flash[:notice] = 'Problem was successfully created.'
+  #     redirect_to action: :index
+  #   else
+  #     flash[:notice] = 'Error saving problem'
+  #   redirect_to action: :index
+  #   end
+  # end
 
   def edit
     @problem = Problem.find(params[:id])
@@ -145,7 +147,7 @@ class ProblemsController < ApplicationController
   end
 
   def turn_all_off
-    Problem.available.all.each do |problem|
+    Problem.with_user_access(@current_user).available.all.each do |problem|
       problem.available = false
       problem.save
     end
@@ -153,7 +155,7 @@ class ProblemsController < ApplicationController
   end
 
   def turn_all_on
-    Problem.where.not(available: true).each do |problem|
+    Problem.with_user_access(@current_user).where.not(available: true).each do |problem|
       problem.available = true
       problem.save
     end
@@ -162,7 +164,7 @@ class ProblemsController < ApplicationController
 
   def stat
     @problem = Problem.find(params[:id])
-    unless @problem.available or session[:admin]
+    unless @problem.available or session[:admin] or @problem.user == User.find(session[:user_id])
       redirect_to :controller => 'main', :action => 'list'
       return
     end
@@ -229,6 +231,10 @@ class ProblemsController < ApplicationController
       params.delete :import_to_db
     end
     user = User.find(session[:user_id])
+    if old_problem!=nil and !user.admin? and old_problem.user != user
+      flash[:error] = "Problem with the same name authored by another user exists"
+      render :action => 'import' and return
+    end
     @problem, import_log = Problem.create_from_import_form_params(params,
                                                                   old_problem, user)
 
