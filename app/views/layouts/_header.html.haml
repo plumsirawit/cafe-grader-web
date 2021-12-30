@@ -62,6 +62,7 @@
                   = add_menu( 'Sites', 'sites', 'index')
                   = add_menu( 'Contests', 'contest_management', 'index')
             / report
+          - if (@current_user!=nil) and (session[:admin])
             %li.dropdown
               %a.dropdown-toggle{href: '#', data: {toggle:'dropdown'},  aria: {haspopup:"true", expanded:"false"}, role: "button"}
                 Report
