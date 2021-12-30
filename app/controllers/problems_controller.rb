@@ -228,8 +228,9 @@ class ProblemsController < ApplicationController
     if !allow_test_pair_import? and params.has_key? :import_to_db
       params.delete :import_to_db
     end
+    user = User.find(session[:user_id])
     @problem, import_log = Problem.create_from_import_form_params(params,
-                                                                  old_problem)
+                                                                  old_problem, user)
 
     if !@problem.errors.empty?
       render :action => 'import' and return

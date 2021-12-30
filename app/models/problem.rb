@@ -1,5 +1,5 @@
 class Problem < ActiveRecord::Base
-
+  belongs_to :user
   belongs_to :description
   has_and_belongs_to_many :contests, :uniq => true
 
@@ -27,7 +27,7 @@ class Problem < ActiveRecord::Base
     #Problem.available.all(:order => "date_added DESC, name ASC")
   end
 
-  def self.create_from_import_form_params(params, old_problem=nil)
+  def self.create_from_import_form_params(params, old_problem=nil, user=nil)
     org_problem = old_problem || Problem.new
     import_params, problem = Problem.extract_params_and_check(params, 
                                                               org_problem)
@@ -41,6 +41,7 @@ class Problem < ActiveRecord::Base
     problem.test_allowed = true
     problem.output_only = false
     problem.available = false
+    problem.user = user
 
     if not problem.save
       return problem, 'Error importing'
@@ -95,6 +96,7 @@ class Problem < ActiveRecord::Base
   end
 
   def self.extract_params_and_check(params, problem)
+    puts params.to_yaml
     time_limit = Problem.to_f_or_default(params[:time_limit],
                                          DEFAULT_TIME_LIMIT)
     memory_limit = Problem.to_i_or_default(params[:memory_limit],
@@ -130,6 +132,10 @@ class Problem < ActiveRecord::Base
       problem.full_name = params[:full_name]
     else
       problem.full_name = params[:name]
+    end
+
+    if params[:user_id]!=''
+      problem.user_id = params[:user_id]
     end
 
     return [{
